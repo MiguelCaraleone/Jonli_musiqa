@@ -5,130 +5,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jonli Musiqa - Studio</title>
     <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #1DB954;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        p.subtitle {
-            color: #b3b3b3;
-            margin-bottom: 30px;
-        }
-        .card {
-            background-color: #181818;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            display: none; /* Boshida yashirin turadi */
-        }
-        .card.active {
-            display: block;
-            animation: fadeIn 0.5s;
-        }
-        h2 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        button {
-            background-color: #282828;
-            color: white;
-            border: 1px solid #404040;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        button:hover {
-            background-color: #1DB954;
-            color: black;
-            border-color: #1DB954;
-            transform: scale(1.02);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        body { background-color: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { color: #1DB954; font-size: 2.5rem; }
+        .card { background-color: #181818; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: none; }
+        .card.active { display: block; animation: fadeIn 0.5s; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { background-color: #282828; color: white; border: 1px solid #404040; padding: 15px; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #1DB954; color: black; }
+        .record-btn { background-color: #ff3b30; border-radius: 50%; width: 80px; height: 80px; font-size: 2rem; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
+        .recording { animation: pulse 1.5s infinite; background-color: #ff3b30 !important; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 59, 48, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); } }
+        #audio-playback, #full-song-player { width: 100%; margin-top: 20px; display: none; }
+        .pay-box { background: #282828; padding: 10px; border-radius: 8px; font-family: monospace; font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <h1>🎵 Studio Sayti</h1>
-    <p class="subtitle">O'z ovozingizni professional cholg'u asboblari bilan qo'shib, haqiqiy qo'shiq yaratamiz.</p>
-
-    <!-- 1-QADAM: Janr tanlash -->
+    
+    <!-- 1-QADAM: Janr -->
     <div id="step1" class="card active">
-        <h2>1. Qanday musiqiy ijro yaratishimizni xohlaysiz? Janrni tanlang:</h2>
+        <h2>1. Janrni tanlang:</h2>
         <div class="grid">
             <button onclick="selectGenre('Pop / Rok')">🎸 Pop / Rok</button>
-            <button onclick="selectGenre('Sharqona / Milliy')">🌍 Sharqona / Milliy</button>
-            <button onclick="selectGenre('Klassik / Yevropa')">🎻 Klassik / Yevropa</button>
-            <button onclick="selectGenre('Afrika / Amerika')">🪘 Afrika / Amerika</button>
+            <button onclick="selectGenre('Milliy')">🌍 Sharqona</button>
+            <button onclick="selectGenre('Klassik')">🎻 Klassik</button>
+            <button onclick="selectGenre('Jahon')">🪘 Afrika / Jahon</button>
         </div>
     </div>
 
-    <!-- 2-QADAM: Cholg'u tanlash -->
+    <!-- 2-QADAM: Cholg'u -->
     <div id="step2" class="card">
-        <h2>2. Qaysi cholg'u asboblari chalishini xohlaysiz?</h2>
+        <h2>2. Cholg'ularni tanlang:</h2>
         <div class="grid">
-            <button onclick="selectInstrument('Dutor, Nay va Doira')">🪈 Milliy</button>
-            <button onclick="selectInstrument('Skripka va Gitara')">🎻 Yevropa</button>
-            <button onclick="selectInstrument('Oud, Kaxon va Sitar')">🪘 Jahon</button>
-            <button onclick="selectInstrument('Barcha asboblar (Orkestr)')">🌟 Orkestr</button>
+            <button onclick="selectInstrument('Dutor, Nay')">🪈 Milliy</button>
+            <button onclick="selectInstrument('Skripka, Gitara')">🎻 Yevropa</button>
+            <button onclick="selectInstrument('Oud, Sitar')">🪘 Jahon</button>
+            <button onclick="selectInstrument('Orkestr')">🌟 Orkestr</button>
         </div>
     </div>
     
-    <!-- Natija qismi -->
-    <div id="result" class="card" style="border: 2px solid #1DB954;">
-        <h2>✅ Tanlov saqlandi!</h2>
-        <p>Janr: <b id="res-genre"></b></p>
-        <p>Cholg'ular: <b id="res-inst"></b></p>
-        <p style="color: #ff9800; margin-top: 20px;">Endi navbat ovoz yozishda! (Keyingi qadam qo'shiladi)</p>
+    <!-- 3-QADAM: Ovoz yozish -->
+    <div id="step3" class="card">
+        <h2>3. Ovozingizni yozib oling (30 sekund)</h2>
+        <p style="color: #b3b3b3; font-size: 0.9rem;">Mikrofon tugmasini bosing va kuylang.</p>
+        <button id="recordButton" class="record-btn" onclick="toggleRecording()">🎤</button>
+        <p id="recordStatus" style="font-weight: bold; color: #1DB954;">Yozishga tayyor</p>
+        <button id="createDemoBtn" onclick="createDemo()" style="display: none; background-color: #1DB954; color: black; margin-top: 20px; width: 100%;">
+            Demo yaratishni boshlash ⏳
+        </button>
+    </div>
+
+    <!-- 4-QADAM: Demo natijasi va To'lov -->
+    <div id="step4" class="card">
+        <h2>✅ Sizning 30 sekundlik demoingiz tayyor!</h2>
+        <audio id="audio-playback" controls></audio>
+        
+        <hr style="border-color: #404040; margin: 20px 0;">
+        <h2>💳 To'liq qo'shiq (3 daqiqa) uchun to'lov:</h2>
+        <div class="pay-box">9860 3501 4780 2176</div>
+        <p>Egasi: <b>Mamatkulov Izzatillo</b></p>
+        <p style="color: #ff9800;">Summa: <b>20,000 so'm</b></p>
+        
+        <p style="font-size: 0.9rem; margin-top: 20px;">To'lovni amalga oshirgach, chekni Telegram botimizga yuboring. Admin tasdiqlagach, to'liq qo'shiq shu yerda paydo bo'ladi.</p>
+        <button onclick="checkPayment()" style="background: #0088cc; color: white; margin-top: 10px;">Telegram orqali chek yuborish</button>
+    </div>
+
+    <!-- 5-QADAM: To'liq qo'shiq -->
+    <div id="step5" class="card" style="border: 2px solid #1DB954;">
+        <h2>🎉 To'liq qo'shiq tayyor!</h2>
+        <audio id="full-song-player" controls></audio>
+        <a id="download-link" href="#" download="Mening_Qoshigim.mp3" style="display: inline-block; margin-top: 20px; background: #1DB954; color: black; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold;">⬇️ Yuklab olish</a>
     </div>
 </div>
 
 <script>
-    // Tanlovlarni saqlash uchun o'zgaruvchilar
-    let selectedGenre = "";
-    let selectedInstrument = "";
+    let selectedGenre = "", selectedInstrument = "", audioBlob = null, demoUrl = "";
+    
+    function selectGenre(genre) { selectedGenre = genre; document.getElementById('step1').classList.remove('active'); document.getElementById('step2').classList.add('active'); }
+    function selectInstrument(inst) { selectedInstrument = inst; document.getElementById('step2').classList.remove('active'); document.getElementById('step3').classList.add('active'); }
 
-    // Janr tanlanganda ishlaydigan funksiya
-    function selectGenre(genre) {
-        selectedGenre = genre;
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step2').classList.add('active');
+    // Ovoz yozish logikasi
+    let mediaRecorder, audioChunks = [], isRecording = false, recordingTimeout;
+    async function toggleRecording() {
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    document.getElementById('createDemoBtn').style.display = 'block';
+                    document.getElementById('recordStatus').innerText = "Yozib olindi!";
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById('recordButton').classList.add('recording');
+                document.getElementById('recordStatus').innerText = "Yozilmoqda...";
+                recordingTimeout = setTimeout(() => { if (isRecording) stopRecording(); }, 30000); // 30 sek
+            } catch (err) { alert("Mikrofon xatosi: " + err); }
+        } else { stopRecording(); }
+    }
+    function stopRecording() { if (mediaRecorder && mediaRecorder.state !== "inactive") { mediaRecorder.stop(); isRecording = false; clearTimeout(recordingTimeout); document.getElementById('recordButton').classList.remove('recording'); } }
+
+    // Demo yaratish (Serverga yuborish)
+    async function createDemo() {
+        document.getElementById('step3').classList.remove('active');
+        document.getElementById('step4').classList.add('active');
+        
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "user_voice.webm");
+        formData.append("genre", selectedGenre);
+        formData.append("instrument", selectedInstrument);
+
+        // Diqqat: Bu yerga o'zingizning Python serveringiz manzilini yozasiz
+        // Hozircha test uchun ovozni shunchaki o'zida qaytarib ko'rsatamiz (server yozilmaguncha)
+        const audioPlayback = document.getElementById('audio-playback');
+        audioPlayback.src = URL.createObjectURL(audioBlob);
+        audioPlayback.style.display = 'block';
+        
+        alert("Demo yaratildi! (Haqiqiy musiqa qo'shish uchun server kerak)");
     }
 
-    // Cholg'u tanlanganda ishlaydigan funksiya
-    function selectInstrument(inst) {
-        selectedInstrument = inst;
-        document.getElementById('step2').classList.remove('active');
-        
-        // Natijani ko'rsatish
-        document.getElementById('res-genre').innerText = selectedGenre;
-        document.getElementById('res-inst').innerText = selectedInstrument;
-        document.getElementById('result').classList.add('active');
+    // To'lovni tekshirish (Keyinchalik backend bilan bog'lanadi)
+    function checkPayment() {
+        alert("Telegram botga o'ting va chekni yuboring. Admin tasdiqlagach, to'liq qo'shiq shu yerda ochiladi!");
+        // Bu yerda keyinchalik sayt serverdan to'lov tasdiqlanganini tekshiradi
     }
 </script>
-
 </body>
 </html>
