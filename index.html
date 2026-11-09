@@ -11,14 +11,15 @@
         .card { background-color: #181818; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: none; }
         .card.active { display: block; animation: fadeIn 0.5s; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { background-color: #282828; color: white; border: 1px solid #404040; padding: 15px; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+        button { background-color: #282828; color: white; border: 1px solid #404040; padding: 15px; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: 0.3s; width: 100%; }
         button:hover { background-color: #1DB954; color: black; }
-        .record-btn { background-color: #ff3b30; border-radius: 50%; width: 80px; height: 80px; font-size: 2rem; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
+        .record-btn { background-color: #ff3b30; border-radius: 50%; width: 80px; height: 80px; font-size: 2rem; margin: 20px auto; display: flex; align-items: center; justify-content: center; width: 80px; }
         .recording { animation: pulse 1.5s infinite; background-color: #ff3b30 !important; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 59, 48, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); } }
-        #audio-playback, #full-song-player { width: 100%; margin-top: 20px; display: none; }
-        .pay-box { background: #282828; padding: 10px; border-radius: 8px; font-family: monospace; font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 10px; }
+        
+        .success-box { border: 2px solid #1DB954; background: #1e281e; padding: 20px; border-radius: 12px; margin-top: 20px; }
+        .download-btn { display: inline-block; background: #1DB954; color: black; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 15px; width: 100%; box-sizing: border-box;}
     </style>
 </head>
 <body>
@@ -53,36 +54,31 @@
         <p style="color: #b3b3b3; font-size: 0.9rem;">Mikrofon tugmasini bosing va kuylang.</p>
         <button id="recordButton" class="record-btn" onclick="toggleRecording()">🎤</button>
         <p id="recordStatus" style="font-weight: bold; color: #1DB954;">Yozishga tayyor</p>
-        <button id="createDemoBtn" onclick="createDemo()" style="display: none; background-color: #1DB954; color: black; margin-top: 20px; width: 100%;">
-            Demo yaratishni boshlash ⏳
+        <button id="createDemoBtn" onclick="createDemo()" style="display: none; background-color: #1DB954; color: black; margin-top: 20px;">
+            Demoni yaratish ⏳
         </button>
     </div>
 
-    <!-- 4-QADAM: Demo natijasi va To'lov -->
+    <!-- 4-QADAM: Natija (Bepul) -->
     <div id="step4" class="card">
-        <h2>✅ Sizning 30 sekundlik demoingiz tayyor!</h2>
-        <audio id="audio-playback" controls></audio>
+        <h2>✅ Tayyor!</h2>
+        <p>Janr: <b id="res-genre"></b> | Cholg'u: <b id="res-inst"></b></p>
         
-        <hr style="border-color: #404040; margin: 20px 0;">
-        <h2>💳 To'liq qo'shiq (3 daqiqa) uchun to'lov:</h2>
-        <div class="pay-box">9860 3501 4780 2176</div>
-        <p>Egasi: <b>Mamatkulov Izzatillo</b></p>
-        <p style="color: #ff9800;">Summa: <b>20,000 so'm</b></p>
-        
-        <p style="font-size: 0.9rem; margin-top: 20px;">To'lovni amalga oshirgach, chekni Telegram botimizga yuboring. Admin tasdiqlagach, to'liq qo'shiq shu yerda paydo bo'ladi.</p>
-        <button onclick="checkPayment()" style="background: #0088cc; color: white; margin-top: 10px;">Telegram orqali chek yuborish</button>
-    </div>
+        <div class="success-box">
+            <h3>🎧 30 sekundlik demo:</h3>
+            <audio id="audio-playback" controls style="width: 100%; margin-top: 10px;"></audio>
+        </div>
 
-    <!-- 5-QADAM: To'liq qo'shiq -->
-    <div id="step5" class="card" style="border: 2px solid #1DB954;">
-        <h2>🎉 To'liq qo'shiq tayyor!</h2>
-        <audio id="full-song-player" controls></audio>
-        <a id="download-link" href="#" download="Mening_Qoshigim.mp3" style="display: inline-block; margin-top: 20px; background: #1DB954; color: black; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold;">⬇️ Yuklab olish</a>
+        <div class="success-box" style="border-color: #ff9800; background: #2a221e;">
+            <h3>🔥 To'liq qo'shiq (Bepul sinov):</h3>
+            <p style="font-size: 0.9rem; color: #bbb;">Hozircha barcha imkoniyatlar bepul! Yuklab oling.</p>
+            <a id="download-link" href="#" download="Mening_Qoshigim.mp3" class="download-btn">⬇️ To'liq qo'shiqni yuklab olish</a>
+        </div>
     </div>
 </div>
 
 <script>
-    let selectedGenre = "", selectedInstrument = "", audioBlob = null, demoUrl = "";
+    let selectedGenre = "", selectedInstrument = "", audioBlob = null;
     
     function selectGenre(genre) { selectedGenre = genre; document.getElementById('step1').classList.remove('active'); document.getElementById('step2').classList.add('active'); }
     function selectInstrument(inst) { selectedInstrument = inst; document.getElementById('step2').classList.remove('active'); document.getElementById('step3').classList.add('active'); }
@@ -106,35 +102,29 @@
                 isRecording = true;
                 document.getElementById('recordButton').classList.add('recording');
                 document.getElementById('recordStatus').innerText = "Yozilmoqda...";
-                recordingTimeout = setTimeout(() => { if (isRecording) stopRecording(); }, 30000); // 30 sek
+                recordingTimeout = setTimeout(() => { if (isRecording) stopRecording(); }, 30000);
             } catch (err) { alert("Mikrofon xatosi: " + err); }
         } else { stopRecording(); }
     }
     function stopRecording() { if (mediaRecorder && mediaRecorder.state !== "inactive") { mediaRecorder.stop(); isRecording = false; clearTimeout(recordingTimeout); document.getElementById('recordButton').classList.remove('recording'); } }
 
-    // Demo yaratish (Serverga yuborish)
-    async function createDemo() {
+    // Natijani ko'rsatish (Hozircha faqat o'z ovozini qaytaradi)
+    function createDemo() {
         document.getElementById('step3').classList.remove('active');
         document.getElementById('step4').classList.add('active');
         
-        const formData = new FormData();
-        formData.append("audio", audioBlob, "user_voice.webm");
-        formData.append("genre", selectedGenre);
-        formData.append("instrument", selectedInstrument);
-
-        // Diqqat: Bu yerga o'zingizning Python serveringiz manzilini yozasiz
-        // Hozircha test uchun ovozni shunchaki o'zida qaytarib ko'rsatamiz (server yozilmaguncha)
-        const audioPlayback = document.getElementById('audio-playback');
-        audioPlayback.src = URL.createObjectURL(audioBlob);
-        audioPlayback.style.display = 'block';
+        document.getElementById('res-genre').innerText = selectedGenre;
+        document.getElementById('res-inst').innerText = selectedInstrument;
         
-        alert("Demo yaratildi! (Haqiqiy musiqa qo'shish uchun server kerak)");
-    }
-
-    // To'lovni tekshirish (Keyinchalik backend bilan bog'lanadi)
-    function checkPayment() {
-        alert("Telegram botga o'ting va chekni yuboring. Admin tasdiqlagach, to'liq qo'shiq shu yerda ochiladi!");
-        // Bu yerda keyinchalik sayt serverdan to'lov tasdiqlanganini tekshiradi
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Demo pleyer
+        document.getElementById('audio-playback').src = audioUrl;
+        
+        // Yuklab olish havolasi (Hozircha faqat foydalanuvchi o'z ovozini yuklab oladi)
+        const downloadLink = document.getElementById('download-link');
+        downloadLink.href = audioUrl;
+        downloadLink.download = "Mening_Qoshigim.webm"; // Brauzer webm formatida yozadi
     }
 </script>
 </body>
