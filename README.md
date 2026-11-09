@@ -1,2 +1,2 @@
-# Jonli_musiqa
-Ovozli yozuvni qöşiq qiliböyaratib beriş
+aiogram>=3.10.0
+pydub
