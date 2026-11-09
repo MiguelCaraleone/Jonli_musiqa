@@ -3,39 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mening Musiqa Saytim</title>
+    <title>Jonli Musiqa - Studio</title>
     <style>
         body {
             background-color: #121212;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            padding: 50px;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
         }
         h1 {
-            color: #1DB954; /* Spotify yashil rangi */
-            font-size: 3rem;
+            color: #1DB954;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
-        p {
-            font-size: 1.2rem;
+        p.subtitle {
             color: #b3b3b3;
+            margin-bottom: 30px;
         }
         .card {
             background-color: #181818;
-            padding: 30px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-top: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: none; /* Boshida yashirin turadi */
+        }
+        .card.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        button {
+            background-color: #282828;
+            color: white;
+            border: 1px solid #404040;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background-color: #1DB954;
+            color: black;
+            border-color: #1DB954;
+            transform: scale(1.02);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>Jonli Musiqa</h1>
-        <p>Xush kelibsiz! Bu mening birinchi saytim.</p>
+<div class="container">
+    <h1>🎵 Studio Sayti</h1>
+    <p class="subtitle">O'z ovozingizni professional cholg'u asboblari bilan qo'shib, haqiqiy qo'shiq yaratamiz.</p>
+
+    <!-- 1-QADAM: Janr tanlash -->
+    <div id="step1" class="card active">
+        <h2>1. Qanday musiqiy ijro yaratishimizni xohlaysiz? Janrni tanlang:</h2>
+        <div class="grid">
+            <button onclick="selectGenre('Pop / Rok')">🎸 Pop / Rok</button>
+            <button onclick="selectGenre('Sharqona / Milliy')">🌍 Sharqona / Milliy</button>
+            <button onclick="selectGenre('Klassik / Yevropa')">🎻 Klassik / Yevropa</button>
+            <button onclick="selectGenre('Afrika / Amerika')">🪘 Afrika / Amerika</button>
+        </div>
     </div>
+
+    <!-- 2-QADAM: Cholg'u tanlash -->
+    <div id="step2" class="card">
+        <h2>2. Qaysi cholg'u asboblari chalishini xohlaysiz?</h2>
+        <div class="grid">
+            <button onclick="selectInstrument('Dutor, Nay va Doira')">🪈 Milliy</button>
+            <button onclick="selectInstrument('Skripka va Gitara')">🎻 Yevropa</button>
+            <button onclick="selectInstrument('Oud, Kaxon va Sitar')">🪘 Jahon</button>
+            <button onclick="selectInstrument('Barcha asboblar (Orkestr)')">🌟 Orkestr</button>
+        </div>
+    </div>
+    
+    <!-- Natija qismi -->
+    <div id="result" class="card" style="border: 2px solid #1DB954;">
+        <h2>✅ Tanlov saqlandi!</h2>
+        <p>Janr: <b id="res-genre"></b></p>
+        <p>Cholg'ular: <b id="res-inst"></b></p>
+        <p style="color: #ff9800; margin-top: 20px;">Endi navbat ovoz yozishda! (Keyingi qadam qo'shiladi)</p>
+    </div>
+</div>
+
+<script>
+    // Tanlovlarni saqlash uchun o'zgaruvchilar
+    let selectedGenre = "";
+    let selectedInstrument = "";
+
+    // Janr tanlanganda ishlaydigan funksiya
+    function selectGenre(genre) {
+        selectedGenre = genre;
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+    }
+
+    // Cholg'u tanlanganda ishlaydigan funksiya
+    function selectInstrument(inst) {
+        selectedInstrument = inst;
+        document.getElementById('step2').classList.remove('active');
+        
+        // Natijani ko'rsatish
+        document.getElementById('res-genre').innerText = selectedGenre;
+        document.getElementById('res-inst').innerText = selectedInstrument;
+        document.getElementById('result').classList.add('active');
+    }
+</script>
 
 </body>
 </html>
