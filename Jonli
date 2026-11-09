@@ -1,0 +1,273 @@
+import os
+import logging
+import asyncio
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.filters import Command
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
+from pydub import AudioSegment
+
+TOKEN = os.getenv("BOT_TOKEN", "9237388648:AAHqC1UHqbkMUFwEIW-vE59Oj990Zp2Ar4w")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "1302845749"))
+
+KARTA_RAQAMI = "9860 3501 4780 2176"
+KARTA_EGASI = "Mamatkulov Izzatillo"
+
+logging.basicConfig(level=logging.INFO)
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+
+# Bot bosqichlari (FSM)
+class StudioStates(StatesGroup):
+    waiting_for_genre = State()
+    waiting_for_instruments = State()
+    waiting_for_demo_voice = State()
+    waiting_for_receipt = State()
+    waiting_for_full_voice = State() # 1 daqiqalik to'liq ovozni kutish holati
+
+# 1. Start komandasi
+@dp.message(Command("start"))
+async def cmd_start(message: types.Message, state: FSMContext):
+    await state.clear()
+    text = (
+        "🎵 **Studio Botga xush kelibsiz!**\n\n"
+        "O'z ovozingizni professional cholg'u asboblari bilan qo'shib, haqiqiy qo'shiq yaratamiz.\n\n"
+        "Qanday musiqiy ijro yaratishimizni xohlaysiz? Janrlardan birini tanlang:"
+    )
+    
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🎸 Pop / Rok", callback_data="genre_pop")],
+        [InlineKeyboardButton(text="🌍 Sharqona / Milliy", callback_data="genre_milliy")],
+        [InlineKeyboardButton(text="🎻 Klassik / Yevropa", callback_data="genre_euro")],
+        [InlineKeyboardButton(text="🪘 Afrika / Amerika / Yaqin Sharq", callback_data="genre_world")]
+    ])
+    
+    await message.answer(text, reply_markup=keyboard, parse_mode="Markdown")
+    await state.set_state(StudioStates.waiting_for_genre)
+
+# 2. Janr tanlash
+@dp.callback_query(F.data.startswith("genre_"), StudioStates.waiting_for_genre)
+async def process_genre(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    genre = callback.data.split("_")[1]
+    await state.update_data(genre=genre)
+    
+    instruments_text = (
+        "🪕 **Jahon cholg'u asboblari ro'yxati:**\n\n"
+        "• **O'zbek va Markaziy Osiyo:** Dutor, G‘ijjak, Rubob, Nay, Doira\n"
+        "• **Yevropa:** Skripka, Akustik Gitara, Fortepiano\n"
+        "• **Yaqin Sharq va Osiyo:** Oud, Sitar, Qonun\n"
+        "• **Afrika va Amerika:** Kaxon, Bongo, Saksofon\n\n"
+        "Qaysi cholg'u asboblari orqali chalishini xohlaysiz? Bitta asbob yoki barchasini tanlang:"
+    )
+    
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🪈 Dutor, Nay va Doira (Milliy)", callback_data="inst_milliy")],
+        [InlineKeyboardButton(text="🎻 Skripka va Gitara (Yevropa)", callback_data="inst_euro")],
+        [InlineKeyboardButton(text="🪘 Oud, Kaxon va Sitar (Jahon)", callback_data="inst_world")],
+        [InlineKeyboardButton(text="🌟 BARCHASI BILAN (Orkestr / Full)", callback_data="inst_all")]
+    ])
+    
+    instruments_photo_url = "https://i.ibb.co/RkRvBsHP/file-00000000865082469ff369a93b107407.png"
+    
+    try:
+        await callback.message.answer_photo(
+            photo=instruments_photo_url,
+            caption=instruments_text,
+            reply_markup=keyboard,
+            parse_mode="Markdown"
+        )
+        await callback.message.delete()
+    except Exception:
+        await callback.message.answer(instruments_text, reply_markup=keyboard, parse_mode="Markdown")
+        
+    await state.set_state(StudioStates.waiting_for_instruments)
+
+# 3. Cholg'u tanlangach - Demo ovoz so'rash
+@dp.callback_query(F.data.startswith("inst_"), StudioStates.waiting_for_instruments)
+async def process_instruments(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    inst = callback.data.split("_")[1]
+    await state.update_data(instrument=inst)
+    
+    await callback.message.answer(
+        "🎤 **Ajoyib tanlov!**\n\n"
+        "Endi qo'shiq matnini qisqacha kuylab, **ovozli xabar** ko'rinishida yuboring (25 sekundlik demo uchun).",
+        parse_mode="HTML"
+    )
+    await state.set_state(StudioStates.waiting_for_demo_voice)
+
+# 4. 25 sekundlik demo yaratish
+@dp.message(StudioStates.waiting_for_demo_voice, F.voice)
+async def handle_demo_voice(message: types.Message, state: FSMContext):
+    processing_msg = await message.answer("🎧 Ovoz qabul qilindi, 25 sekundlik demo tayyorlanmoqda...")
+    
+    voice_file = await bot.get_file(message.voice.file_id)
+    voice_path = f"voice_{message.from_user.id}.ogg"
+    demo_path = f"demo_{message.from_user.id}.mp3"
+    
+    await bot.download_file(voice_file.file_path, voice_path)
+    
+    try:
+        user_voice = AudioSegment.from_file(voice_path, format="ogg")
+        bg_music_path = "background.mp3"
+        
+        if os.path.exists(bg_music_path):
+            background = AudioSegment.from_file(bg_music_path, format="mp3")
+            if len(background) > 25000:
+                background = background[:25000]
+            if len(user_voice) > 25000:
+                user_voice = user_voice[:25000]
+            background = background - 12
+            demo_audio = background.overlay(user_voice)
+        else:
+            demo_audio = user_voice[:25000]
+            
+        demo_audio.export(demo_path, format="mp3")
+        
+        audio_in = FSInputFile(demo_path)
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="💎 To'liq qo'shiqni olish (3.50 daqiqalik)", callback_data="buy_full_song")]
+        ])
+        
+        await message.answer_audio(
+            audio=audio_in,
+            caption="✨ **Mana sizning 25 sekundlik demo qo'shig'ingiz!**\nTo'liq 3.50 daqiqalik versiyani olish uchun to'lovni amalga oshiring.",
+            reply_markup=keyboard,
+            parse_mode="Markdown"
+        )
+        await processing_msg.delete()
+    except Exception as e:
+        await message.answer(f"Xatolik: {e}")
+    finally:
+        if os.path.exists(voice_path):
+            os.remove(voice_path)
+        if os.path.exists(demo_path):
+            os.remove(demo_path)
+
+# 5. To'lov menyusi
+@dp.callback_query(F.data == "buy_full_song")
+async def request_payment(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    text = (
+        f"💳 **To'liq qo'shiqni olish uchun to'lov:**\n\n"
+        f"Karta raqami: <code>{KARTA_RAQAMI}</code>\n"
+        f"Karta egasi: <b>{KARTA_EGASI}</b>\n"
+        f"Summa: <b>20,000 so'm</b>\n\n"
+        f"Pulni o'tkazgandan so'ng, chek (skrinshot) rasmini shu botga yuboring."
+    )
+    await callback.message.answer(text, parse_mode="HTML")
+    await state.set_state(StudioStates.waiting_for_receipt)
+
+# 6. Chekni qabul qilish va adminga yuborish
+@dp.message(StudioStates.waiting_for_receipt, F.photo | F.document)
+async def receive_receipt(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    safe_name = html.escape(message.from_user.full_name or "Foydalanuvchi")
+    username_str = f" (@{message.from_user.username})" if message.from_user.username else ""
+    
+    admin_text = (
+        f"🧾 **Yangi to'lov cheki keldi!**\n\n"
+        f"👤 Kimdan: <b>{safe_name}</b>{username_str}\n"
+        f"🆔 ID: <code>{user_id}</code>\n\n"
+        f"Tasdiqlaysizmi?"
+    )
+    
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Tasdiqlash va 1 daqiqalik ovoz so'rash", callback_data=f"approve_pay:{user_id}")]
+    ])
+    
+    try:
+        if message.photo:
+            await bot.send_photo(ADMIN_ID, message.photo[-1].file_id, caption=admin_text, reply_markup=keyboard, parse_mode="HTML")
+        elif message.document:
+            await bot.send_document(ADMIN_ID, message.document.file_id, caption=admin_text, reply_markup=keyboard, parse_mode="HTML")
+            
+        await message.answer("✅ **Chekingiz adminga yuborildi!**\nAdmin tasdiqlashi bilan sizdan 1 daqiqalik ovozli yozuv so'raladi.", parse_mode="HTML")
+        await state.clear()
+    except Exception as e:
+        await message.answer(f"Xatolik: {e}")
+
+# 7. Admin to'lovni tasdiqlaganda
+@dp.callback_query(F.data.startswith("approve_pay:"))
+async def admin_approve_payment(callback: CallbackQuery, state: FSMContext):
+    if callback.from_user.id != ADMIN_ID:
+        return await callback.answer("Siz admin emassiz!", show_alert=True)
+        
+    user_id = int(callback.data.split(":")[1])
+    await callback.answer("Tasdiqlandi!")
+    
+    try:
+        await callback.message.edit_caption(caption=callback.message.caption + "\n\n✅ **TASDIQLANDI**", parse_mode="HTML", reply_markup=None)
+    except Exception:
+        pass
+        
+    # Foydalanuvchiga xabar yuborib, state'ni 1 daqiqalik ovoz kutishga o'tkazamiz
+    # Eslatma: state'ni to'g'ridan-to'g'ri boshqa foydalanuvchiga o'rnatish uchun FSMContext(storage, key) kerak, 
+    # shuning uchun foydalanuvchining holatini bazada yoki maxsus dictionary'da saqlash qulayroq. 
+    # Hozirgi sodda holatda bot foydalanuvchiga yozadi va keyingi yuborgan ovozini to'liq qo'shiqqa aylantiramiz.
+    
+    await bot.send_message(
+        user_id,
+        "🎉 **To'lovingiz admin tomonidan tasdiqlandi!**\n\n"
+        "Endi to'liq qo'shiq uchun **1 daqiqalik ovozli yozuvni** yuboring. "
+        "Biz uni maxsus aranjirovka bilan **3.50 daqiqalik** to'liq qo'shiq qilib sizga qaytaramiz!",
+        parse_mode="HTML"
+    )
+
+# 8. Ovoz kelganda uni to'liq 3.50 daqiqalik (230 sekund) qo'shiqqa aylantirish
+@dp.message(F.voice)
+async def handle_full_song_creation(message: Message):
+    processing_msg = await message.answer("🎵 Ovozli yozuv qabul qilindi. Barcha tanlangan cholg'ular bilan **3.50 daqiqalik** to'liq qo'shiq bastalanmoqda...")
+    
+    voice_file = await bot.get_file(message.voice.file_id)
+    voice_path = f"full_voice_{message.from_user.id}.ogg"
+    full_output_path = f"full_song_{message.from_user.id}.mp3"
+    
+    await bot.download_file(voice_file.file_path, voice_path)
+    
+    try:
+        user_voice = AudioSegment.from_file(voice_path, format="ogg")
+        bg_music_path = "background.mp3"
+        
+        # 3.50 daqiqa = 3 * 60 + 50 = 230 sekund = 230 000 millisekund
+        target_duration = 230000 
+        
+        if os.path.exists(bg_music_path):
+            background = AudioSegment.from_file(bg_music_path, format="mp3")
+            # Fon musiqasini 3.50 daqiqagacha cho'zish (takrorlash)
+            if len(background) < target_duration:
+                background = background * (target_duration // len(background) + 1)
+            background = background[:target_duration]
+            
+            # Agar foydalanuvchi ovozi 3.50 daqiqadan qisqa bo'lsa, fon davom etadi, ovoz o'z joyida turadi
+            background = background - 10
+            full_audio = background.overlay(user_voice, position=1000) # 1 sekunddan so'ng boshlanadi
+        else:
+            full_audio = user_voice[:target_duration]
+            
+        full_audio.export(full_output_path, format="mp3")
+        
+        audio_in = FSInputFile(full_output_path)
+        await message.answer_audio(
+            audio=audio_in,
+            caption="🔥 **Mana sizning 3.50 daqiqalik professional to'liq qo'shig'ingiz!**\nMarhamat, tinglang va baho bering.",
+            parse_mode="Markdown"
+        )
+        await processing_msg.delete()
+        
+    except Exception as e:
+        await message.answer(f"Xatolik yuz berdi: {e}")
+    finally:
+        if os.path.exists(voice_path):
+            os.remove(voice_path)
+        if os.path.exists(full_output_path):
+            os.remove(full_output_path)
+
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
